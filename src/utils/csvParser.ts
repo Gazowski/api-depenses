@@ -2,14 +2,16 @@
 
 import fs from 'fs';
 import { parse } from 'csv-parse';
+import iconv from 'iconv-lite';
 
 interface Transaction {
-    transactionDate: string;
+    transactionId: string;
+    transactionDate: Date;
     description: string;
     amount: number;
     // categoryId: string;
-    createdAt: string;
-    updatedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export async function parseCSV(filePath: string): Promise<Transaction[]> {
@@ -17,6 +19,7 @@ export async function parseCSV(filePath: string): Promise<Transaction[]> {
     const transactions: Transaction[] = [];
 
     fs.createReadStream(filePath)
+        .pipe(iconv.decodeStream('ISO-8859-1'))
         .pipe(parse({
             delimiter: ',',
             skip_empty_lines: true
@@ -35,15 +38,36 @@ export async function parseCSV(filePath: string): Promise<Transaction[]> {
 
             if (row.length === 6) {
                 transaction.description = row[0];
-                transaction.transactionDate = row[3];
+                transaction.transactionDate = new Date(row[3]);
                 transaction.amount = parseFloat(row[5].replace(',', '.'));
-            } else {
+                transaction.transactionId = row[3].split('/').join('')
+                 + transaction.amount.toString()
+                    .replace('.', '')
+                    .replace('-', '')
+                 + row[0];
+            } else if (row.length === 4) {
                 transaction.description = row[3];
-                transaction.transactionDate = row[1];
+                transaction.transactionDate = new Date(row[1]);
                 transaction.amount = parseFloat(row[2].replace(',', '.'));
+                transaction.transactionId = row[1].split('/').join('')
+                    + transaction.amount.toString()
+                        .replace('.', '')
+                        .replace('-', '')
+                    + row[3];
+            } else {
+                console.warn(`Skipping row with unexpected number of columns: ${row}`);
+                return;
             }
-            transaction.createdAt = new Date().toISOString();
-            transaction.updatedAt = new Date().toISOString();
+            transaction.transactionId = transaction.transactionId
+                        .replace(/^\s+|\s+$/g, '')
+                        // remove white space
+                        .replace(/\s/g,'')                        
+                        .toLowerCase()
+                        // take only the first 30 characters
+                        .substring(0, 30)
+            transaction.createdAt = new Date();
+            transaction.updatedAt = new Date();
+
             transactions.push(transaction);
 
         })

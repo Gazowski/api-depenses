@@ -2,9 +2,14 @@
 
 import { Request, Response } from 'express';
 import { parseCSV } from '../utils/csvParser';
-import { saveTransactionsToDatabase } from '../models/Transaction'; // Vous devrez implémenter cette fonction
+import { TransactionService } from '../models/Transaction'; // Vous devrez implémenter cette fonction
+import { CategoryService } from '../models/Category'; // Vous devrez implémenter cette fonction
 import fs from 'fs';
-import { Transaction } from '../models/Transaction'; // Import the Transaction type
+import { Transaction } from '../entity/Transaction'; // Import the Transaction type
+
+
+const transactionService = new TransactionService();
+const categoryService = new CategoryService();
 
 export const uploadAndParseCSV = async (req: Request, res: Response) => {
     if (!req.file) {
@@ -14,32 +19,21 @@ export const uploadAndParseCSV = async (req: Request, res: Response) => {
     try {
         const parsedTransactions = await parseCSV(req.file.path);
 
-        // Convertir les transactions parsées en objets Transaction
-        // const transactions: Partial<Transaction>[] = parsedTransactions.map(t => ({
-        //     transactioDate: new Date(t.transactionDate),
-        //     description: t.description,
-        //     amount: t.amount,
-        //     createdAt: new Date().toISOString(),
-        //     updatedAt: new Date().toISOString()
-        //     // Ne pas inclure l'id ici, il sera généré automatiquement
-        //     // Ajoutez d'autres champs si nécessaire
-        // }));
-
         // Convert the parsed transactions into Transaction objects (entities)
-        const transactions: Transaction[] = parsedTransactions.map(t => {
+        const transactions: Transaction[] = await Promise.all(parsedTransactions.map(async t => {
             const transaction = new Transaction();
+            transaction.transactionId = t.transactionId;
             transaction.transactionDate = t.transactionDate;
             transaction.description = t.description;
             transaction.amount = t.amount;
-            transaction.createdAt = new Date().toISOString();
-            transaction.updatedAt = new Date().toISOString();
+            transaction.createdAt = new Date();
+            transaction.updatedAt = new Date();
+            transaction.category = await categoryService.findCategoryForTransaction(t.description);
             return transaction;
-        });
-        console.log(transactions);
+        }));
 
-        
         // Sauvegarder les transactions dans la base de données
-        await saveTransactionsToDatabase(transactions);
+        await transactionService.saveTransactionsToDatabase(transactions);
 
         // Supprimer le fichier temporaire après le traitement
         fs.unlinkSync(req.file.path);
@@ -53,3 +47,44 @@ export const uploadAndParseCSV = async (req: Request, res: Response) => {
         res.status(500).send('Erreur lors du traitement du fichier CSV');
     }
 };
+
+export const getAllTransactions = async (req: Request, res: Response) => {
+    const transactions = await transactionService.getAll();
+    res.json(transactions);
+};
+
+export const getTransactionsByYear = async (req: Request, res: Response) => {
+    const year = req.query.year as string;
+    const transactions = await transactionService.getTransactionsByYear(year);
+    res.json(transactions);
+};
+
+/**
+ * get transaction for a category for a specific month
+    * @param req
+    * @param res
+    * @returns {Promise<void>} 
+ */
+
+export const getTransactionsByCategoryAndMonth = async (req: Request, res: Response) => {
+    const { year, month, category } = req.query;
+
+    const transactions = await transactionService.getTransactionsByCategoryAndMonth(year as string, month as string, category as string);
+    res.json(transactions);
+};
+
+/**
+ * update transaction category
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ */
+
+export const updateTransactionCategory = async (req: Request, res: Response):Promise<void> => {
+    const { transactionId, category } = req.body;
+    console.log('req.body', req.body);
+    console.log('transactionId', transactionId);
+    console.log('category', category);
+    const transaction = await transactionService.updateTransactionCategory(parseInt(transactionId) as number, parseInt(category) as number);
+    res.json(transaction);
+}

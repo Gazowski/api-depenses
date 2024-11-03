@@ -12,6 +12,33 @@ services:
       - '5432:5432'
     volumes:
       - postgres_db:/var/lib/postgresql/data
+    
+  # nuxt_app:
+  #   build:
+  #     context: ../depenses-nuxt-express
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - API_URL=http://express_api:5000
+  #   depends_on:
+  #     - express_api
+
+  # express_api:
+  #   build:
+  #     context: /
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3003:3003"
+  #   environment:
+  #     - DB_HOST=postgres_db
+  #     - DB_PORT=5432
+  #     - DB_NAME=releves-bancaires
+  #     - DB_USER=gael
+  #     - DB_PASSWORD=postgres123
+  #   depends_on:
+  #     - postgres_db
+
 volumes:
   postgres_db:
     driver: local

@@ -3,24 +3,28 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import comptesRoutes from './routes/comptes';
-import uploadRoutes from './routes/upload';
+import transactionRoutes from './routes/transaction';
+import categoryRoutes from './routes/categories';
 import { AppDataSource } from "./data-source";
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3003;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use('/api/comptes', comptesRoutes);
-app.use('/api/upload', uploadRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/categories', categoryRoutes);
+
 
 // Database connection
 AppDataSource.initialize()
   .then(() => {
     console.log('Database connected');
+
   })
   .catch((error) => {
     console.error('Error connecting to database:', error);
