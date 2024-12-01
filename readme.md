@@ -10,6 +10,12 @@ Make sure you have Docker installed on your machine. If not, you can download it
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
+- title, varchar
+- color, varchar
+- groupe, varchar
+- keywords, text
+
+
 1. Clone the repository:
 
 ```
@@ -21,6 +27,10 @@ These instructions will get you a copy of the project up and running on your loc
 - Run the Docker container:
     docker run -p 3003:3003 -d api-depenses
 ```
+
+2. Démarrer avec docker compose
+- docker compose build
+- docker compose up
 
 ## DÉMARRER L'APPLICATION
     - lancer docker-desktop (raccourcie sur le bureau)
@@ -69,14 +79,3 @@ TABLE TRANSACTION
 TABLE CATEGORIE
 - id, serial4 (s'incrémente a chaque nouvelle transaction(commence à 10), clé)
 - name, varchar (slug de la categorie)
-- title, varchar
-- color, varchar
-- groupe, varchar
-- keywords, text
-
-
-
-
-
-
-

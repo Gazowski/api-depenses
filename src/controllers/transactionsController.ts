@@ -11,6 +11,31 @@ import { Transaction } from '../entity/Transaction'; // Import the Transaction t
 const transactionService = new TransactionService();
 const categoryService = new CategoryService();
 
+export const getTransactionsForLast24Months = async (req: Request, res: Response) => {
+    try {
+        const transactions = await transactionService.getTransactionsForLast24Months();
+        res.json(transactions);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+};
+
+export const getTransactionsForYear = async (req: Request, res: Response) => {
+    const year = parseInt(req.query.year as string);
+    if (isNaN(year)) {
+        return res.status(400).json({ error: 'Invalid year parameter' });
+    }
+
+    try {
+        const transactions = await transactionService.getTransactionsForYear(year);
+        res.json(transactions);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+};
+
+
+
 export const uploadAndParseCSV = async (req: Request, res: Response) => {
     if (!req.file) {
         return res.status(400).send('Aucun fichier n\'a été téléchargé.');
@@ -82,9 +107,6 @@ export const getTransactionsByCategoryAndMonth = async (req: Request, res: Respo
 
 export const updateTransactionCategory = async (req: Request, res: Response):Promise<void> => {
     const { transactionId, category } = req.body;
-    console.log('req.body', req.body);
-    console.log('transactionId', transactionId);
-    console.log('category', category);
     const transaction = await transactionService.updateTransactionCategory(parseInt(transactionId) as number, parseInt(category) as number);
     res.json(transaction);
 }

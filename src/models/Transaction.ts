@@ -3,9 +3,54 @@
 import { Transaction } from "../entity/Transaction";
 import { Category } from "../entity/Category";
 import { AppDataSource } from "../data-source";
+import { setCache, getCache } from "../utils/cache";
+import { MoreThan, MoreThanOrEqual, LessThanOrEqual } from "typeorm";
 
 export class TransactionService {
     private transactionRepository = AppDataSource.getRepository(Transaction);
+
+    // get transactions from cache
+    async getTransactionsForLast24Months(): Promise<Transaction[]> {
+        const cacheKey = 'transactions_last_24_months';
+        let transactions = await getCache(cacheKey);
+
+        if (!transactions) {
+            const twoYearsAgo = new Date();
+            twoYearsAgo.setMonth(twoYearsAgo.getMonth() - 24);
+
+            transactions = await this.transactionRepository.find({
+                where: {
+                    transactionDate: MoreThan(twoYearsAgo),
+                },
+            });
+
+            await setCache(cacheKey, transactions, 3600 * 24 * 30); // Cache for 30 days
+        }
+
+        return transactions;
+    }
+
+    async getTransactionsForYear(year: number): Promise<Transaction[]> {
+        const cacheKey = `transactions_${year}`;
+        let transactions = await getCache(cacheKey);
+
+        if (!transactions) {
+            const startDate = new Date(year, 0, 1);
+            const endDate = new Date(year, 11, 31, 23, 59, 59);
+
+            transactions = await this.transactionRepository.find({
+                where: [
+                    { transactionDate: MoreThanOrEqual(startDate) },
+                    { transactionDate: LessThanOrEqual(endDate) },
+                ],
+            });
+
+            console.log('transactions pas de cache');
+
+            await setCache(cacheKey, transactions, 3600 * 24 * 30); // Cache for 30 days
+        } else { console.log('transactions cache');}
+        return transactions;
+    }
 
     async saveTransactionsToDatabase(transactions: Partial<Transaction>[]): Promise<void> {
         const transactionRepository = AppDataSource.getRepository(Transaction);

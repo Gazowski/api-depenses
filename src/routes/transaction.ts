@@ -7,6 +7,8 @@ import {
   getTransactionsByYear,
   getTransactionsByCategoryAndMonth,
   updateTransactionCategory,
+  getTransactionsForLast24Months,
+  getTransactionsForYear
 } from '../controllers/transactionsController';
 
 const router = express.Router();
@@ -37,5 +39,7 @@ router.post('/upload', upload.single('file'), uploadAndParseCSV);
 router.get('/transactionsForYear', getTransactionsByYear);
 router.get('/transactionsForCategoryAndMonth', getTransactionsByCategoryAndMonth);
 router.post('/updateTransactionCategory', updateTransactionCategory);
+router.get('/transactionsForLast24Months', getTransactionsForLast24Months);
+router.get('/cachedTransactionsForYear', getTransactionsForYear);
 
 export default router;

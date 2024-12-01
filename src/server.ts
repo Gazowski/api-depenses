@@ -30,11 +30,6 @@ AppDataSource.initialize()
     console.error('Error connecting to database:', error);
   });
 
-// Test route
-app.get('/', (req, res) => {
-  res.json({ message: 'Bienvenue sur l\'API de suivi des comptes bancaires' });
-});
-
 // Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
