@@ -1,0 +1,30 @@
+# Utiliser une image Node.js officielle comme image de base
+FROM node:20
+
+# Définir le répertoire de travail dans le conteneur
+WORKDIR /app
+
+# Copier les fichiers package.json et package-lock.json (si disponible)
+COPY package*.json ./
+
+# Installer les dépendances du projet
+RUN npm install -g nodemon ts-node typescript
+RUN npm install
+
+# Ajouter les permissions d'exécution pour nodemon
+RUN chmod +x /app/node_modules/.bin/nodemon
+
+# Copier les fichiers et dossiers du projet dans le répertoire de travail du conteneur
+COPY . .
+
+# Définir l'environnement de développement
+ENV NODE_ENV=development
+# Ajouter le répertoire node_modules/.bin au PATH
+ENV PATH=/app/node_modules/.bin:$PATH
+
+# Exposer le port sur lequel l'API va s'exécuter
+EXPOSE 3003
+
+# Définir la commande pour démarrer l'API
+# CMD [ "npm", "run", "dev" ]
+CMD ["nodemon", "--exec", "ts-node", "src/server.ts"]
