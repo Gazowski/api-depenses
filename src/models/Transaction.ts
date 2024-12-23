@@ -55,7 +55,7 @@ export class TransactionService {
     async saveTransactionsToDatabase(transactions: Partial<Transaction>[]): Promise<void> {
         const transactionRepository = AppDataSource.getRepository(Transaction);
         // await transactionRepository.save(transactions);
-        
+
         // use query builder to insert transactions
         await AppDataSource
             .createQueryBuilder()

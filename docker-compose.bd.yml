@@ -1,0 +1,59 @@
+
+services:
+  postgres_db:
+    image: postgres:latest
+    container_name: PostgresCont 
+    restart: always
+    environment:
+      - POSTGRES_DB=releves-bancaires
+      - POSTGRES_USER=gael
+      - POSTGRES_PASSWORD=postgres123
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+    networks:
+      - default
+    
+  db:
+    image: mysql:8.0
+    container_name: my_mysql_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=releves-bancaires
+      - MYSQL_USER=gael
+      - MYSQL_PASSWORD=mysql123
+    ports: 
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  express_api:
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres_db
+      - DB_PORT=5432
+      - DB_NAME=releves-bancaires
+      - DB_USER=gael
+      - DB_PASSWORD=postgres123
+    depends_on:
+      - postgres_db
+      
+    networks: 
+      - default
+    
+volumes:
+  postgres_db:
+    driver: local
+  mysql_data:
+    driver: local
+
+# Docker Compose V2 crée automatiquement un réseau par défaut
+networks:
+  default:
+    driver: bridge

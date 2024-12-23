@@ -6,17 +6,17 @@ const { format, parse } = require('date-fns');
 const sourceConfig = {
 
   type: 'mysql',
-  host: 'localhost',
+  host: 'db',
   port: 3306,
-  username: 'root',
-  password: '',
-  database: 'nuxt-sd',
+  username: 'gael',
+  password: 'mysql123',
+  database: 'releves-bancaires',
   charset: 'utf8mb4'
 };
 
 const targetConfig = {
   type: 'postgres',
-  host: 'localhost',
+  host: 'postgres_db',
   port: 5432,
   username: 'gael',
   password: 'postgres123',
@@ -52,7 +52,7 @@ async function migrateTransactions() {
 
     // Récupération des transactions depuis la source
     const sourceTransactions = await sourceConnection.query(
-      'SELECT * FROM TRANSACTION ORDER BY createdAt'
+      'SELECT * FROM transaction ORDER BY createdAt'
     );
 
     console.log(`Found ${sourceTransactions.length} transactions to migrate`);

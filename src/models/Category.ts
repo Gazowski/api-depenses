@@ -5,8 +5,12 @@ export class CategoryService {
     private categoryRepository = AppDataSource.getRepository(Category);
 
     async findOrCreate(name: string): Promise<Category> {
+        console.log('--------------')
+        console.log('find or create')
+        console.log('name', name)
         let category = await this.categoryRepository.findOne({ where: { name } });
         if (!category) {
+            console.log('pas de category')
             category = this.categoryRepository.create({ name, keywords: [] });
             await this.categoryRepository.save(category);
         }
@@ -36,7 +40,7 @@ export class CategoryService {
                 }
             }
         }
-        return this.findOrCreate('unknown');
+        return this.findOrCreate('Inconnu');
     }
 
 }
